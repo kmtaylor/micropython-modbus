@@ -201,76 +201,76 @@ class Serial(object):
         )
         time.sleep_us(sleep_time_us)
 
-    def _send_receive(self,
-                      modbus_pdu: bytes,
-                      slave_addr: int,
-                      count: bool) -> bytes:
-        """
-        Send a modbus message and receive the reponse.
-
-        :param      modbus_pdu:  The modbus Protocol Data Unit
-        :type       modbus_pdu:  bytes
-        :param      slave_addr:  The slave address
-        :type       slave_addr:  int
-        :param      count:       The count
-        :type       count:       bool
-
-        :returns:   Validated response content
-        :rtype:     bytes
-        """
-        # flush the Rx FIFO buffer
-        self._uart.read()
-
-        self._send(modbus_pdu=modbus_pdu, slave_addr=slave_addr)
-
-        return self._validate_resp_hdr(response=self._uart_read(),
-                                       slave_addr=slave_addr,
-                                       function_code=modbus_pdu[0],
-                                       count=count)
-
-    def _validate_resp_hdr(self,
-                           response: bytearray,
-                           slave_addr: int,
-                           function_code: int,
-                           count: bool) -> bytes:
-        """
-        Validate the response header.
-
-        :param      response:       The response
-        :type       response:       bytearray
-        :param      slave_addr:     The slave address
-        :type       slave_addr:     int
-        :param      function_code:  The function code
-        :type       function_code:  int
-        :param      count:          The count
-        :type       count:          bool
-
-        :returns:   Modbus response content
-        :rtype:     bytes
-        """
-        if len(response) == 0:
-            raise OSError('no data received from slave')
-
-        resp_crc = response[-Const.CRC_LENGTH:]
-        expected_crc = self._calculate_crc16(
-            response[0:len(response) - Const.CRC_LENGTH]
-        )
-
-        if ((resp_crc[0] is not expected_crc[0]) or
-                (resp_crc[1] is not expected_crc[1])):
-            raise OSError('invalid response CRC')
-
-        if (response[0] != slave_addr):
-            raise ValueError('wrong slave address')
-
-        if (response[1] == (function_code + Const.ERROR_BIAS)):
-            raise ValueError('slave returned exception code: {:d}'.
-                             format(response[2]))
-
-        hdr_length = (Const.RESPONSE_HDR_LENGTH + 1) if count else \
-            Const.RESPONSE_HDR_LENGTH
-
-        return response[hdr_length:len(response) - Const.CRC_LENGTH]
+#    def _send_receive(self,
+#                      modbus_pdu: bytes,
+#                      slave_addr: int,
+#                      count: bool) -> bytes:
+#        """
+#        Send a modbus message and receive the reponse.
+#
+#        :param      modbus_pdu:  The modbus Protocol Data Unit
+#        :type       modbus_pdu:  bytes
+#        :param      slave_addr:  The slave address
+#        :type       slave_addr:  int
+#        :param      count:       The count
+#        :type       count:       bool
+#
+#        :returns:   Validated response content
+#        :rtype:     bytes
+#        """
+#        # flush the Rx FIFO buffer
+#        self._uart.read()
+#
+#        self._send(modbus_pdu=modbus_pdu, slave_addr=slave_addr)
+#
+#        return self._validate_resp_hdr(response=self._uart_read(),
+#                                       slave_addr=slave_addr,
+#                                       function_code=modbus_pdu[0],
+#                                       count=count)
+#
+#    def _validate_resp_hdr(self,
+#                           response: bytearray,
+#                           slave_addr: int,
+#                           function_code: int,
+#                           count: bool) -> bytes:
+#        """
+#        Validate the response header.
+#
+#        :param      response:       The response
+#        :type       response:       bytearray
+#        :param      slave_addr:     The slave address
+#        :type       slave_addr:     int
+#        :param      function_code:  The function code
+#        :type       function_code:  int
+#        :param      count:          The count
+#        :type       count:          bool
+#
+#        :returns:   Modbus response content
+#        :rtype:     bytes
+#        """
+#        if len(response) == 0:
+#            raise OSError('no data received from slave')
+#
+#        resp_crc = response[-Const.CRC_LENGTH:]
+#        expected_crc = self._calculate_crc16(
+#            response[0:len(response) - Const.CRC_LENGTH]
+#        )
+#
+#        if ((resp_crc[0] is not expected_crc[0]) or
+#                (resp_crc[1] is not expected_crc[1])):
+#            raise OSError('invalid response CRC')
+#
+#        if (response[0] != slave_addr):
+#            raise ValueError('wrong slave address')
+#
+#        if (response[1] == (function_code + Const.ERROR_BIAS)):
+#            raise ValueError('slave returned exception code: {:d}'.
+#                             format(response[2]))
+#
+#        hdr_length = (Const.RESPONSE_HDR_LENGTH + 1) if count else \
+#            Const.RESPONSE_HDR_LENGTH
+#
+#        return response[hdr_length:len(response) - Const.CRC_LENGTH]
 
     def send_response(self,
                       slave_addr: int,
