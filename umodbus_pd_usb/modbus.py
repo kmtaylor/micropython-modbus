@@ -177,65 +177,47 @@ class Modbus(object):
         else:
             request.send_exception(Const.ILLEGAL_DATA_ADDRESS)
 
-#    def _process_write_access(self, request: Request, reg_type: str) -> None:
-#        """
-#        Process write access to register
-#
-#        :param      request:   The request
-#        :type       request:   Request
-#        :param      reg_type:  The register type
-#        :type       reg_type:  str
-#        """
-#        address = request.register_addr
-#        val = 0
-#        valid_register = False
-#
-#        if address in self._register_dict[reg_type]:
-#            if request.data is None:
-#                request.send_exception(Const.ILLEGAL_DATA_VALUE)
-#                return
-#
-#            if reg_type == 'COILS':
-#                valid_register = True
-#
-#                if request.function == Const.WRITE_SINGLE_COIL:
-#                    val = request.data[0]
-#                    if 0x00 < val < 0xFF:
-#                        valid_register = False
-#                        request.send_exception(Const.ILLEGAL_DATA_VALUE)
-#                    else:
-#                        val = [(val == 0xFF)]
-#                elif request.function == Const.WRITE_MULTIPLE_COILS:
-#                    tmp = int.from_bytes(request.data, "big")
-#                    val = [
-#                        bool(tmp & (1 << n)) for n in range(request.quantity)
-#                    ]
-#
-#                if valid_register:
-#                    self.set_coil(address=address, value=val)
-#            elif reg_type == 'HREGS':
-#                valid_register = True
-#                val = list(functions.to_short(byte_array=request.data,
-#                                              signed=False))
-#
-#                if request.function in [Const.WRITE_SINGLE_REGISTER,
-#                                        Const.WRITE_MULTIPLE_REGISTERS]:
-#                    self.set_hreg(address=address, value=val)
-#            else:
-#                # nothing except holding registers or coils can be set
-#                request.send_exception(Const.ILLEGAL_FUNCTION)
-#
-#            if valid_register:
-#                request.send_response()
-#                self._set_changed_register(reg_type=reg_type,
-#                                           address=address,
-#                                           value=val)
-#                if self._register_dict[reg_type][address].get('on_set_cb', 0):
-#                    _cb = self._register_dict[reg_type][address]['on_set_cb']
-#                    _cb(reg_type=reg_type, address=address, val=val)
-#        else:
-#            request.send_exception(Const.ILLEGAL_DATA_ADDRESS)
-#
+    def _process_write_access(self, request: Request, reg_type: str) -> None:
+        """
+        Process write access to register
+
+        :param      request:   The request
+        :type       request:   Request
+        :param      reg_type:  The register type
+        :type       reg_type:  str
+        """
+        address = request.register_addr
+        val = 0
+        valid_register = False
+
+        if address in self._register_dict[reg_type]:
+            if request.data is None:
+                request.send_exception(Const.ILLEGAL_DATA_VALUE)
+                return
+
+            if reg_type == 'HREGS':
+                valid_register = True
+                val = list(functions.to_short(byte_array=request.data,
+                                              signed=False))
+
+                if request.function in [Const.WRITE_SINGLE_REGISTER,
+                                        Const.WRITE_MULTIPLE_REGISTERS]:
+                    self.set_hreg(address=address, value=val)
+            else:
+                # nothing except holding registers or coils can be set
+                request.send_exception(Const.ILLEGAL_FUNCTION)
+
+            if valid_register:
+                request.send_response()
+                #self._set_changed_register(reg_type=reg_type,
+                #                           address=address,
+                #                           value=val)
+                if self._register_dict[reg_type][address].get('on_set_cb', 0):
+                    _cb = self._register_dict[reg_type][address]['on_set_cb']
+                    _cb(reg_type=reg_type, address=address, val=val)
+        else:
+            request.send_exception(Const.ILLEGAL_DATA_ADDRESS)
+
 #    def add_coil(self,
 #                 address: int,
 #                 value: Union[bool, List[bool]] = False,
@@ -351,20 +333,20 @@ class Modbus(object):
 #        :rtype:     Union[None, int, List[int]]
 #        """
 #        return self._remove_reg_from_dict(reg_type='HREGS', address=address)
-#
-#    def set_hreg(self, address: int, value: Union[int, List[int]] = 0) -> None:
-#        """
-#        Set the holding register value.
-#
-#        :param      address:  The address (ID) of the register
-#        :type       address:  int
-#        :param      value:    The default value
-#        :type       value:    int or list of int, optional
-#        """
-#        self._set_reg_in_dict(reg_type='HREGS',
-#                              address=address,
-#                              value=value)
-#
+
+    def set_hreg(self, address: int, value: Union[int, List[int]] = 0) -> None:
+        """
+        Set the holding register value.
+
+        :param      address:  The address (ID) of the register
+        :type       address:  int
+        :param      value:    The default value
+        :type       value:    int or list of int, optional
+        """
+        self._set_reg_in_dict(reg_type='HREGS',
+                              address=address,
+                              value=value)
+
 #    def get_hreg(self, address: int) -> Union[int, List[int]]:
 #        """
 #        Get the holding register value.

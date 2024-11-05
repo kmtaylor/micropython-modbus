@@ -396,26 +396,26 @@ def exception_response(function_code: int, exception_code: int) -> bytes:
 #        bit_qty -= 8
 #
 #    return bool_list
-#
-#
-#def to_short(byte_array: bytes, signed: bool = True) -> bytes:
-#    """
-#    Convert bytes to tuple of integer values
-#
-#    :param      byte_array:  The byte array
-#    :type       byte_array:  bytes
-#    :param      signed:      Indicates if signed
-#    :type       signed:      bool
-#
-#    :returns:   Integer representation
-#    :rtype:     bytes
-#    """
-#    response_quantity = int(len(byte_array) / 2)
-#    fmt = '>' + (('h' if signed else 'H') * response_quantity)
-#
-#    return struct.unpack(fmt, byte_array)
-#
-#
+
+
+def to_short(byte_array: bytes, signed: bool = True) -> bytes:
+    """
+    Convert bytes to tuple of integer values
+
+    :param      byte_array:  The byte array
+    :type       byte_array:  bytes
+    :param      signed:      Indicates if signed
+    :type       signed:      bool
+
+    :returns:   Integer representation
+    :rtype:     bytes
+    """
+    response_quantity = int(len(byte_array) / 2)
+    fmt = '>' + (('h' if signed else 'H') * response_quantity)
+
+    return struct.unpack(fmt, byte_array)
+
+
 #def float_to_bin(num: float) -> bin:
 #    """
 #    Convert floating point value to binary
