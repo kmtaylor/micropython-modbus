@@ -9,15 +9,14 @@
 #
 
 # system packages
-from machine import UART
-from machine import Pin
+from pyb import USB_VCP
 import struct
 import time
 
 # custom packages
 from . import const as Const
 from . import functions
-from .common import Request, CommonModbusFunctions
+from .common import Request
 from .common import ModbusException
 from .modbus import Modbus
 
@@ -31,98 +30,26 @@ class ModbusRTU(Modbus):
 
     :param      addr:        The address of this device on the bus
     :type       addr:        int
-    :param      baudrate:    The baudrate, default 9600
-    :type       baudrate:    int
-    :param      data_bits:   The data bits, default 8
-    :type       data_bits:   int
-    :param      stop_bits:   The stop bits, default 1
-    :type       stop_bits:   int
-    :param      parity:      The parity, default None
-    :type       parity:      Optional[int]
-    :param      pins:        The pins as list [TX, RX]
-    :type       pins:        List[Union[int, Pin], Union[int, Pin]]
-    :param      ctrl_pin:    The control pin
-    :type       ctrl_pin:    int
-    :param      uart_id:     The ID of the used UART
-    :type       uart_id:     int
     """
-    def __init__(self,
-                 addr: int,
-                 baudrate: int = 9600,
-                 data_bits: int = 8,
-                 stop_bits: int = 1,
-                 parity: Optional[int] = None,
-                 pins: List[Union[int, Pin], Union[int, Pin]] = None,
-                 ctrl_pin: int = None,
-                 uart_id: int = 1):
+    def __init__(self, addr: int):
         super().__init__(
             # set itf to Serial object, addr_list to [addr]
-            Serial(uart_id=uart_id,
-                   baudrate=baudrate,
-                   data_bits=data_bits,
-                   stop_bits=stop_bits,
-                   parity=parity,
-                   pins=pins,
-                   ctrl_pin=ctrl_pin),
+            Serial(),
             [addr]
         )
 
 
-class Serial(CommonModbusFunctions):
-    def __init__(self,
-                 uart_id: int = 1,
-                 baudrate: int = 9600,
-                 data_bits: int = 8,
-                 stop_bits: int = 1,
-                 parity=None,
-                 pins: List[Union[int, Pin], Union[int, Pin]] = None,
-                 ctrl_pin: int = None):
+class Serial(object):
+    def __init__(self):
         """
         Setup Serial/RTU Modbus
-
-        :param      uart_id:     The ID of the used UART
-        :type       uart_id:     int
-        :param      baudrate:    The baudrate, default 9600
-        :type       baudrate:    int
-        :param      data_bits:   The data bits, default 8
-        :type       data_bits:   int
-        :param      stop_bits:   The stop bits, default 1
-        :type       stop_bits:   int
-        :param      parity:      The parity, default None
-        :type       parity:      Optional[int]
-        :param      pins:        The pins as list [TX, RX]
-        :type       pins:        List[Union[int, Pin], Union[int, Pin]]
-        :param      ctrl_pin:    The control pin
-        :type       ctrl_pin:    int
         """
-        # UART flush function is introduced in Micropython v1.20.0
-        self._has_uart_flush = callable(getattr(UART, "flush", None))
-        self._uart = UART(uart_id,
-                          baudrate=baudrate,
-                          bits=data_bits,
-                          parity=parity,
-                          stop=stop_bits,
-                          # timeout_chars=2,  # WiPy only
-                          # pins=pins         # WiPy only
-                          tx=pins[0],
-                          rx=pins[1]
-                          )
-
-        if ctrl_pin is not None:
-            self._ctrlPin = Pin(ctrl_pin, mode=Pin.OUT)
-        else:
-            self._ctrlPin = None
-
-        # timing of 1 character in microseconds (us)
-        self._t1char = (1000000 * (data_bits + stop_bits + 2)) // baudrate
+        self._uart = USB_VCP()
 
         # inter-frame delay in microseconds (us)
         # - <= 19200 bps: 3.5x timing of 1 character
         # - > 19200 bps: 1750 us
-        if baudrate <= 19200:
-            self._inter_frame_delay = (self._t1char * 3500) // 1000
-        else:
-            self._inter_frame_delay = 1750
+        self._inter_frame_delay = 1750
 
     def _calculate_crc16(self, data: bytearray) -> bytes:
         """
@@ -257,12 +184,6 @@ class Serial(CommonModbusFunctions):
         modbus_adu.extend(modbus_pdu)
         modbus_adu.extend(self._calculate_crc16(modbus_adu))
 
-        if self._ctrlPin:
-            self._ctrlPin.on()
-            # wait until the control pin really changed
-            # 85-95us (ESP32 @ 160/240MHz)
-            time.sleep_us(200)
-
         # the timing of this part is critical:
         # - if we disable output too early,
         #   the command will not be received in full
@@ -275,19 +196,10 @@ class Serial(CommonModbusFunctions):
         self._uart.write(modbus_adu)
         send_finish_time = time.ticks_us()
 
-        if self._has_uart_flush:
-            self._uart.flush()
-            time.sleep_us(self._t1char)
-        else:
-            sleep_time_us = (
-                self._t1char * len(modbus_adu) -    # total frame time in us
-                time.ticks_diff(send_finish_time, send_start_time) +
-                100     # only required at baudrates above 57600, but hey 100us
-            )
-            time.sleep_us(sleep_time_us)
-
-        if self._ctrlPin:
-            self._ctrlPin.off()
+        sleep_time_us = (
+            100     # only required at baudrates above 57600, but hey 100us
+        )
+        time.sleep_us(sleep_time_us)
 
     def _send_receive(self,
                       modbus_pdu: bytes,
