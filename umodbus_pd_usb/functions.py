@@ -273,85 +273,85 @@ from .typing import List, Optional, Union
 #            return True
 #
 #    return False
-#
-#
-#def response(function_code: int,
-#             request_register_addr: int,
-#             request_register_qty: int,
-#             request_data: list,
-#             value_list: Optional[list] = None,
-#             signed: bool = True) -> bytes:
-#    """
-#    Construct a Modbus response Protocol Data Unit
-#
-#    :param      function_code:          The function code
-#    :type       function_code:          int
-#    :param      request_register_addr:  The request register address
-#    :type       request_register_addr:  int
-#    :param      request_register_qty:   The request register qty
-#    :type       request_register_qty:   int
-#    :param      request_data:           The request data
-#    :type       request_data:           list
-#    :param      value_list:             The values
-#    :type       value_list:             Optional[list]
-#    :param      signed:                 Indicates if signed
-#    :type       signed:                 bool
-#
-#    :returns:   Protocol data unit
-#    :rtype:     bytes
-#    """
-#    if function_code in [Const.READ_COILS, Const.READ_DISCRETE_INPUTS]:
-#        sectioned_list = [value_list[i:i + 8] for i in range(0, len(value_list), 8)]    # noqa: E501
-#
-#        output_value = []
-#        for index, byte in enumerate(sectioned_list):
-#            # see https://github.com/brainelectronics/micropython-modbus/issues/22
-#            # output = sum(v << i for i, v in enumerate(byte))
-#            # see https://github.com/brainelectronics/micropython-modbus/issues/38
-#            output = 0
-#            for bit in byte:
-#                output = (output << 1) | bit
-#            output_value.append(output)
-#
-#        fmt = 'B' * len(output_value)
-#        return struct.pack('>BB' + fmt,
-#                           function_code,
-#                           ((len(value_list) - 1) // 8) + 1,
-#                           *output_value)
-#
-#    elif function_code in [Const.READ_HOLDING_REGISTERS,
-#                           Const.READ_INPUT_REGISTER]:
-#        quantity = len(value_list)
-#
-#        if not (0x0001 <= quantity <= 0x007D):
-#            raise ValueError('invalid number of registers')
-#
-#        if signed is True or signed is False:
-#            fmt = ('h' if signed else 'H') * quantity
-#        else:
-#            fmt = ''
-#            for s in signed:
-#                fmt += 'h' if s else 'H'
-#
-#        return struct.pack('>BB' + fmt,
-#                           function_code,
-#                           quantity * 2,
-#                           *value_list)
-#
-#    elif function_code in [Const.WRITE_SINGLE_COIL,
-#                           Const.WRITE_SINGLE_REGISTER]:
-#        return struct.pack('>BHBB',
-#                           function_code,
-#                           request_register_addr,
-#                           *request_data)
-#
-#    elif function_code in [Const.WRITE_MULTIPLE_COILS,
-#                           Const.WRITE_MULTIPLE_REGISTERS]:
-#        return struct.pack('>BHH',
-#                           function_code,
-#                           request_register_addr,
-#                           request_register_qty)
-#
+
+
+def response(function_code: int,
+             request_register_addr: int,
+             request_register_qty: int,
+             request_data: list,
+             value_list: Optional[list] = None,
+             signed: bool = True) -> bytes:
+    """
+    Construct a Modbus response Protocol Data Unit
+
+    :param      function_code:          The function code
+    :type       function_code:          int
+    :param      request_register_addr:  The request register address
+    :type       request_register_addr:  int
+    :param      request_register_qty:   The request register qty
+    :type       request_register_qty:   int
+    :param      request_data:           The request data
+    :type       request_data:           list
+    :param      value_list:             The values
+    :type       value_list:             Optional[list]
+    :param      signed:                 Indicates if signed
+    :type       signed:                 bool
+
+    :returns:   Protocol data unit
+    :rtype:     bytes
+    """
+    if function_code in [Const.READ_COILS, Const.READ_DISCRETE_INPUTS]:
+        sectioned_list = [value_list[i:i + 8] for i in range(0, len(value_list), 8)]    # noqa: E501
+
+        output_value = []
+        for index, byte in enumerate(sectioned_list):
+            # see https://github.com/brainelectronics/micropython-modbus/issues/22
+            # output = sum(v << i for i, v in enumerate(byte))
+            # see https://github.com/brainelectronics/micropython-modbus/issues/38
+            output = 0
+            for bit in byte:
+                output = (output << 1) | bit
+            output_value.append(output)
+
+        fmt = 'B' * len(output_value)
+        return struct.pack('>BB' + fmt,
+                           function_code,
+                           ((len(value_list) - 1) // 8) + 1,
+                           *output_value)
+
+    elif function_code in [Const.READ_HOLDING_REGISTERS,
+                           Const.READ_INPUT_REGISTER]:
+        quantity = len(value_list)
+
+        if not (0x0001 <= quantity <= 0x007D):
+            raise ValueError('invalid number of registers')
+
+        if signed is True or signed is False:
+            fmt = ('h' if signed else 'H') * quantity
+        else:
+            fmt = ''
+            for s in signed:
+                fmt += 'h' if s else 'H'
+
+        return struct.pack('>BB' + fmt,
+                           function_code,
+                           quantity * 2,
+                           *value_list)
+
+    elif function_code in [Const.WRITE_SINGLE_COIL,
+                           Const.WRITE_SINGLE_REGISTER]:
+        return struct.pack('>BHBB',
+                           function_code,
+                           request_register_addr,
+                           *request_data)
+
+    elif function_code in [Const.WRITE_MULTIPLE_COILS,
+                           Const.WRITE_MULTIPLE_REGISTERS]:
+        return struct.pack('>BHH',
+                           function_code,
+                           request_register_addr,
+                           request_register_qty)
+
 
 def exception_response(function_code: int, exception_code: int) -> bytes:
     """

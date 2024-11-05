@@ -94,64 +94,64 @@ class Modbus(object):
 
         return True
 
-#    def _create_response(self,
-#                         request: Request,
-#                         reg_type: str) -> Union[List[bool], List[int]]:
-#        """
-#        Create a response.
-#
-#        :param      request:   The request
-#        :type       request:   Request
-#        :param      reg_type:  The register type
-#        :type       reg_type:  str
-#
-#        :returns:   Values of this register
-#        :rtype:     Union[List[bool], List[int]]
-#        """
-#        data = []
-#        default_value = {'val': 0}
-#        reg_dict = self._register_dict[reg_type]
-#
-#        if reg_type in ['COILS', 'ISTS']:
-#            default_value = {'val': False}
-#
-#        for addr in range(request.register_addr,
-#                          request.register_addr + request.quantity):
-#            value = reg_dict.get(addr, default_value)['val']
-#
-#            if isinstance(value, (list, tuple)):
-#                data.extend(value)
-#            else:
-#                data.append(value)
-#
-#        # caution LSB vs MSB
-#        # [
-#        #   1, 0, 1, 1, 0, 0, 1, 1,     # 0xB3
-#        #   1, 1, 0, 1, 0, 1, 1, 0,     # 0xD6
-#        #   1, 0, 1                     # 0x5
-#        # ]
-#        # but should be, documented at #38, see
-#        # https://github.com/brainelectronics/micropython-modbus/issues/38
-#        # this is only an issue of data provisioning as client/slave,
-#        # it has thereby NOT to be fixed in
-#        # :py:function:`umodbus.functions.bytes_to_bool`
-#        # [
-#        #   1, 1, 0, 0, 1, 1, 0, 1,     # 0xCD
-#        #   0, 1, 1, 0, 1, 0, 1, 1,     # 0x6B
-#        #   1, 0, 1                     # 0x5
-#        # ]
-#        #       27 .... 20
-#        # CD    1100 1101
-#        #
-#        #       35 .... 28
-#        # 6B    0110 1011
-#        #
-#        #       43 .... 36
-#        # 05    0000 0101
-#        #
-#        # 1011 0011   1101 0110   1010 0000
-#
-#        return data
+    def _create_response(self,
+                         request: Request,
+                         reg_type: str) -> Union[List[bool], List[int]]:
+        """
+        Create a response.
+
+        :param      request:   The request
+        :type       request:   Request
+        :param      reg_type:  The register type
+        :type       reg_type:  str
+
+        :returns:   Values of this register
+        :rtype:     Union[List[bool], List[int]]
+        """
+        data = []
+        default_value = {'val': 0}
+        reg_dict = self._register_dict[reg_type]
+
+        if reg_type in ['COILS', 'ISTS']:
+            default_value = {'val': False}
+
+        for addr in range(request.register_addr,
+                          request.register_addr + request.quantity):
+            value = reg_dict.get(addr, default_value)['val']
+
+            if isinstance(value, (list, tuple)):
+                data.extend(value)
+            else:
+                data.append(value)
+
+        # caution LSB vs MSB
+        # [
+        #   1, 0, 1, 1, 0, 0, 1, 1,     # 0xB3
+        #   1, 1, 0, 1, 0, 1, 1, 0,     # 0xD6
+        #   1, 0, 1                     # 0x5
+        # ]
+        # but should be, documented at #38, see
+        # https://github.com/brainelectronics/micropython-modbus/issues/38
+        # this is only an issue of data provisioning as client/slave,
+        # it has thereby NOT to be fixed in
+        # :py:function:`umodbus.functions.bytes_to_bool`
+        # [
+        #   1, 1, 0, 0, 1, 1, 0, 1,     # 0xCD
+        #   0, 1, 1, 0, 1, 0, 1, 1,     # 0x6B
+        #   1, 0, 1                     # 0x5
+        # ]
+        #       27 .... 20
+        # CD    1100 1101
+        #
+        #       35 .... 28
+        # 6B    0110 1011
+        #
+        #       43 .... 36
+        # 05    0000 0101
+        #
+        # 1011 0011   1101 0110   1010 0000
+
+        return data
 
     def _process_read_access(self, request: Request, reg_type: str) -> None:
         """
@@ -316,30 +316,30 @@ class Modbus(object):
 #        :rtype:     dict_keys
 #        """
 #        return self._get_regs_of_dict(reg_type='COILS')
-#
-#    def add_hreg(self,
-#                 address: int,
-#                 value: Union[int, List[int]] = 0,
-#                 on_set_cb: Callable[[str, int, List[int]], None] = None,
-#                 on_get_cb: Callable[[str, int, List[int]], None] = None) -> None:
-#        """
-#        Add a holding register to the modbus register dictionary.
-#
-#        :param      address:    The address (ID) of the register
-#        :type       address:    int
-#        :param      value:      The default value
-#        :type       value:      Union[int, List[int]], optional
-#        :param      on_set_cb:  Callback on setting the holding register
-#        :type       on_set_cb:  Callable[[str, int, List[int]], None]
-#        :param      on_get_cb:  Callback on getting the holding register
-#        :type       on_get_cb:  Callable[[str, int, List[int]], None]
-#        """
-#        self._set_reg_in_dict(reg_type='HREGS',
-#                              address=address,
-#                              value=value,
-#                              on_set_cb=on_set_cb,
-#                              on_get_cb=on_get_cb)
-#
+
+    def add_hreg(self,
+                 address: int,
+                 value: Union[int, List[int]] = 0,
+                 on_set_cb: Callable[[str, int, List[int]], None] = None,
+                 on_get_cb: Callable[[str, int, List[int]], None] = None) -> None:
+        """
+        Add a holding register to the modbus register dictionary.
+
+        :param      address:    The address (ID) of the register
+        :type       address:    int
+        :param      value:      The default value
+        :type       value:      Union[int, List[int]], optional
+        :param      on_set_cb:  Callback on setting the holding register
+        :type       on_set_cb:  Callable[[str, int, List[int]], None]
+        :param      on_get_cb:  Callback on getting the holding register
+        :type       on_get_cb:  Callable[[str, int, List[int]], None]
+        """
+        self._set_reg_in_dict(reg_type='HREGS',
+                              address=address,
+                              value=value,
+                              on_set_cb=on_set_cb,
+                              on_get_cb=on_get_cb)
+
 #    def remove_hreg(self, address: int) -> Union[None, int, List[int]]:
 #        """
 #        Remove a holding register from the modbus register dictionary.
@@ -529,113 +529,113 @@ class Modbus(object):
 #        :rtype:     dict_keys
 #        """
 #        return self._get_regs_of_dict(reg_type='IREGS')
-#
-#    def _set_reg_in_dict(self,
-#                         reg_type: str,
-#                         address: int,
-#                         value: Union[bool, int, List[bool], List[int]],
-#                         on_set_cb: Callable[[str, int, Union[List[bool],
-#                                                              List[int]]],
-#                                             None] = None,
-#                         on_get_cb: Callable[[str, int, Union[List[bool],
-#                                                              List[int]]],
-#                                             None] = None) -> None:
-#        """
-#        Set the register value in the dictionary of registers.
-#
-#        :param      reg_type:   The register type
-#        :type       reg_type:   str
-#        :param      address:    The address (ID) of the register
-#        :type       address:    int
-#        :param      value:      The value(s) of the register(s)
-#        :type       value:      Union[bool, int, List[bool], List[int]]
-#        :param      on_set_cb:  Callback on setting the register
-#        :type       on_get_cb:  Callable[
-#            [str, int, Union[List[bool], List[int]]],
-#            None
-#            ]
-#        :param      on_get_cb:  Callback on getting the register
-#        :type       on_get_cb:  Callable[
-#            [str, int, Union[List[bool], List[int]]],
-#            None
-#            ]
-#
-#        :raise      KeyError:  No register at specified address found
-#        """
-#        if not self._check_valid_register(reg_type=reg_type):
-#            raise KeyError('{} is not a valid register type of {}'.
-#                           format(reg_type, self._available_register_types))
-#
-#        if isinstance(value, (list, tuple)):
-#            # flatten the list and add single registers only
-#            for idx, val in enumerate(value):
-#                this_addr = address + idx
-#                self._set_single_reg_in_dict(reg_type=reg_type,
-#                                             address=this_addr,
-#                                             value=val,
-#                                             on_set_cb=on_set_cb,
-#                                             on_get_cb=on_get_cb)
-#        else:
-#            self._set_single_reg_in_dict(reg_type=reg_type,
-#                                         address=address,
-#                                         value=value,
-#                                         on_set_cb=on_set_cb,
-#                                         on_get_cb=on_get_cb)
-#
-#    def _set_single_reg_in_dict(self,
-#                                reg_type: str,
-#                                address: int,
-#                                value: Union[bool, int],
-#                                on_set_cb: Callable[
-#                                    [str, int, Union[List[bool], List[int]]],
-#                                    None
-#                                ] = None,
-#                                on_get_cb: Callable[
-#                                    [str, int, Union[List[bool], List[int]]],
-#                                    None
-#                                ] = None) -> None:
-#        """
-#        Set a register value in the dictionary of registers.
-#
-#        :param      reg_type:   The register type
-#        :type       reg_type:   str
-#        :param      address:    The address (ID) of the register
-#        :type       address:    int
-#        :param      value:      The value of the register
-#        :type       value:      Union[bool, int]
-#        :param      on_set_cb:  Callback on setting the register
-#        :type       on_get_cb:  Callable[
-#            [str, int, Union[List[bool], List[int]]],
-#            None
-#            ]
-#        :param      on_get_cb:  Callback on getting the register
-#        :type       on_get_cb:  Callable[
-#            [str, int, Union[List[bool], List[int]]],
-#            None
-#            ]
-#        """
-#        data = {'val': value}
-#
-#        # if the register exists already in the register dict a "set_*"
-#        # function might have called this functions
-#        if address in self._register_dict[reg_type]:
-#            # try to get the (already) registered callback function from the
-#            # register dict of this address with the this time call function
-#            # parameter callback value as fallback
-#            on_set_cb = self._register_dict[reg_type][address].get('on_set_cb',
-#                                                                   on_set_cb)
-#
-#            on_get_cb = self._register_dict[reg_type][address].get('on_get_cb',
-#                                                                   on_get_cb)
-#
-#        if callable(on_set_cb):
-#            data['on_set_cb'] = on_set_cb
-#
-#        if callable(on_get_cb):
-#            data['on_get_cb'] = on_get_cb
-#
-#        self._register_dict[reg_type][address] = data
-#
+
+    def _set_reg_in_dict(self,
+                         reg_type: str,
+                         address: int,
+                         value: Union[bool, int, List[bool], List[int]],
+                         on_set_cb: Callable[[str, int, Union[List[bool],
+                                                              List[int]]],
+                                             None] = None,
+                         on_get_cb: Callable[[str, int, Union[List[bool],
+                                                              List[int]]],
+                                             None] = None) -> None:
+        """
+        Set the register value in the dictionary of registers.
+
+        :param      reg_type:   The register type
+        :type       reg_type:   str
+        :param      address:    The address (ID) of the register
+        :type       address:    int
+        :param      value:      The value(s) of the register(s)
+        :type       value:      Union[bool, int, List[bool], List[int]]
+        :param      on_set_cb:  Callback on setting the register
+        :type       on_get_cb:  Callable[
+            [str, int, Union[List[bool], List[int]]],
+            None
+            ]
+        :param      on_get_cb:  Callback on getting the register
+        :type       on_get_cb:  Callable[
+            [str, int, Union[List[bool], List[int]]],
+            None
+            ]
+
+        :raise      KeyError:  No register at specified address found
+        """
+        if not self._check_valid_register(reg_type=reg_type):
+            raise KeyError('{} is not a valid register type of {}'.
+                           format(reg_type, self._available_register_types))
+
+        if isinstance(value, (list, tuple)):
+            # flatten the list and add single registers only
+            for idx, val in enumerate(value):
+                this_addr = address + idx
+                self._set_single_reg_in_dict(reg_type=reg_type,
+                                             address=this_addr,
+                                             value=val,
+                                             on_set_cb=on_set_cb,
+                                             on_get_cb=on_get_cb)
+        else:
+            self._set_single_reg_in_dict(reg_type=reg_type,
+                                         address=address,
+                                         value=value,
+                                         on_set_cb=on_set_cb,
+                                         on_get_cb=on_get_cb)
+
+    def _set_single_reg_in_dict(self,
+                                reg_type: str,
+                                address: int,
+                                value: Union[bool, int],
+                                on_set_cb: Callable[
+                                    [str, int, Union[List[bool], List[int]]],
+                                    None
+                                ] = None,
+                                on_get_cb: Callable[
+                                    [str, int, Union[List[bool], List[int]]],
+                                    None
+                                ] = None) -> None:
+        """
+        Set a register value in the dictionary of registers.
+
+        :param      reg_type:   The register type
+        :type       reg_type:   str
+        :param      address:    The address (ID) of the register
+        :type       address:    int
+        :param      value:      The value of the register
+        :type       value:      Union[bool, int]
+        :param      on_set_cb:  Callback on setting the register
+        :type       on_get_cb:  Callable[
+            [str, int, Union[List[bool], List[int]]],
+            None
+            ]
+        :param      on_get_cb:  Callback on getting the register
+        :type       on_get_cb:  Callable[
+            [str, int, Union[List[bool], List[int]]],
+            None
+            ]
+        """
+        data = {'val': value}
+
+        # if the register exists already in the register dict a "set_*"
+        # function might have called this functions
+        if address in self._register_dict[reg_type]:
+            # try to get the (already) registered callback function from the
+            # register dict of this address with the this time call function
+            # parameter callback value as fallback
+            on_set_cb = self._register_dict[reg_type][address].get('on_set_cb',
+                                                                   on_set_cb)
+
+            on_get_cb = self._register_dict[reg_type][address].get('on_get_cb',
+                                                                   on_get_cb)
+
+        if callable(on_set_cb):
+            data['on_set_cb'] = on_set_cb
+
+        if callable(on_get_cb):
+            data['on_get_cb'] = on_get_cb
+
+        self._register_dict[reg_type][address] = data
+
 #    def _remove_reg_from_dict(self,
 #                              reg_type: str,
 #                              address: int) -> Union[None, bool, int, List[bool], List[int]]:
@@ -698,22 +698,22 @@ class Modbus(object):
 #                           format(reg_type, self._available_register_types))
 #
 #        return self._register_dict[reg_type].keys()
-#
-#    def _check_valid_register(self, reg_type: str) -> bool:
-#        """
-#        Check register type to be a valid modbus register
-#
-#        :param      reg_type:  The register type
-#        :type       reg_type:  str
-#
-#        :returns:   Flag whether register type is valid
-#        :rtype:     bool
-#        """
-#        if reg_type in self._available_register_types:
-#            return True
-#        else:
-#            return False
-#
+
+    def _check_valid_register(self, reg_type: str) -> bool:
+        """
+        Check register type to be a valid modbus register
+
+        :param      reg_type:  The register type
+        :type       reg_type:  str
+
+        :returns:   Flag whether register type is valid
+        :rtype:     bool
+        """
+        if reg_type in self._available_register_types:
+            return True
+        else:
+            return False
+
 #    @property
 #    def changed_registers(self) -> dict:
 #        """
