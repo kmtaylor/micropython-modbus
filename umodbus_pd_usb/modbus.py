@@ -347,19 +347,19 @@ class Modbus(object):
                               address=address,
                               value=value)
 
-#    def get_hreg(self, address: int) -> Union[int, List[int]]:
-#        """
-#        Get the holding register value.
-#
-#        :param      address:  The address (ID) of the register
-#        :type       address:  int
-#
-#        :returns:   Holding register value
-#        :rtype:     Union[int, List[int]]
-#        """
-#        return self._get_reg_in_dict(reg_type='HREGS',
-#                                     address=address)
-#
+    def get_hreg(self, address: int) -> Union[int, List[int]]:
+        """
+        Get the holding register value.
+
+        :param      address:  The address (ID) of the register
+        :type       address:  int
+
+        :returns:   Holding register value
+        :rtype:     Union[int, List[int]]
+        """
+        return self._get_reg_in_dict(reg_type='HREGS',
+                                     address=address)
+
 #    @property
 #    def hregs(self) -> dict_keys:
 #        """
@@ -638,32 +638,32 @@ class Modbus(object):
 #                           format(reg_type, self._available_register_types))
 #
 #        return self._register_dict[reg_type].pop(address, None)
-#
-#    def _get_reg_in_dict(self,
-#                         reg_type: str,
-#                         address: int) -> Union[bool, int, List[bool], List[int]]:
-#        """
-#        Get the register value from the dictionary of registers.
-#
-#        :param      reg_type:  The register type
-#        :type       reg_type:  str
-#        :param      address:   The address (ID) of the register
-#        :type       address:   int
-#
-#        :raise      KeyError:  No register at specified address found
-#        :returns:   Register value
-#        :rtype:     Union[bool, int, List[bool], List[int]]
-#        """
-#        if not self._check_valid_register(reg_type=reg_type):
-#            raise KeyError('{} is not a valid register type of {}'.
-#                           format(reg_type, self._available_register_types))
-#
-#        if address in self._register_dict[reg_type]:
-#            return self._register_dict[reg_type][address]['val']
-#        else:
-#            raise KeyError('No {} available for the register address {}'.
-#                           format(reg_type, address))
-#
+
+    def _get_reg_in_dict(self,
+                         reg_type: str,
+                         address: int) -> Union[bool, int, List[bool], List[int]]:
+        """
+        Get the register value from the dictionary of registers.
+
+        :param      reg_type:  The register type
+        :type       reg_type:  str
+        :param      address:   The address (ID) of the register
+        :type       address:   int
+
+        :raise      KeyError:  No register at specified address found
+        :returns:   Register value
+        :rtype:     Union[bool, int, List[bool], List[int]]
+        """
+        if not self._check_valid_register(reg_type=reg_type):
+            raise KeyError('{} is not a valid register type of {}'.
+                           format(reg_type, self._available_register_types))
+
+        if address in self._register_dict[reg_type]:
+            return self._register_dict[reg_type][address]['val']
+        else:
+            raise KeyError('No {} available for the register address {}'.
+                           format(reg_type, address))
+
 #    def _get_regs_of_dict(self, reg_type: str) -> dict_keys:
 #        """
 #        Get all configured registers of specified register type.
