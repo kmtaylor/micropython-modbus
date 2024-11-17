@@ -24,7 +24,10 @@ class Request(object):
     def __init__(self, interface, data: bytearray) -> None:
         self._itf = interface
         self.unit_addr = data[0]
-        self.function, self.register_addr = struct.unpack_from('>BH', data, 1)
+        self.function = data[1]
+
+        if self.function != Const.REPORT_SERVER_ID:
+            self.register_addr = struct.unpack_from('>H', data, 2)[0]
 
         if self.function in [Const.READ_HOLDING_REGISTERS, Const.READ_INPUT_REGISTER]:
             self.quantity = struct.unpack_from('>H', data, 4)[0]

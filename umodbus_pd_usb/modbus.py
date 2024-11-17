@@ -33,9 +33,10 @@ class Modbus(object):
     :param      addr_list:  List of addresses
     :type       addr_list:  List[int]
     """
-    def __init__(self, itf, addr_list: List[int]) -> None:
+    def __init__(self, itf, addr_list: List[int], id_bytes: bytes) -> None:
         self._itf = itf
         self._addr_list = addr_list
+        self._id_bytes = id_bytes
 
         # modbus register types with their default value
         self._available_register_types = ['COILS', 'HREGS', 'IREGS', 'ISTS']
@@ -83,6 +84,9 @@ class Modbus(object):
             # function 16 - write multiple holding register
             reg_type = 'HREGS'
             req_type = 'WRITE'
+        elif request.function == Const.REPORT_SERVER_ID:
+            # Add this block to handle function code 0x11 (Report Server ID)
+            self.handle_report_server_id()
         else:
             request.send_exception(Const.ILLEGAL_FUNCTION)
 
@@ -93,6 +97,20 @@ class Modbus(object):
                 self._process_write_access(request=request, reg_type=reg_type)
 
         return True
+
+    def handle_report_server_id(self) -> None:
+        """
+        Handle the Report Server ID (function code 0x11).
+        """
+        # Create the PDU. Slave address and CRC are added in _send()
+        pdu = bytearray([Const.REPORT_SERVER_ID,
+                         len(self._id_bytes) + 2,
+                         0xFF,      # Run Indicator Status (0xFF = ON)
+                         180])      # Taken from libmodbus
+        pdu.extend(self._id_bytes)  # Server ID extra information
+
+        # Send the response back to the master
+        self._itf._send(pdu, self._addr_list[0])
 
     def _create_response(self,
                          request: Request,

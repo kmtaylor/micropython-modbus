@@ -31,11 +31,13 @@ class ModbusRTU(Modbus):
     :param      addr:        The address of this device on the bus
     :type       addr:        int
     """
-    def __init__(self, addr: int):
+    def __init__(self, addr: int,
+                 id_bytes: bytes = b'Modbus for micropython.\x00'):
         super().__init__(
             # set itf to Serial object, addr_list to [addr]
             Serial(),
-            [addr]
+            [addr],
+            id_bytes
         )
 
 
@@ -343,7 +345,7 @@ class Serial(object):
         """
         req = self._uart_read_frame(timeout=timeout)
 
-        if len(req) < 8:
+        if len(req) < 4:
             return None
 
         if req[0] not in unit_addr_list:
